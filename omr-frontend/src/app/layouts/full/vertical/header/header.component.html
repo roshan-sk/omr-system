@@ -1,0 +1,113 @@
+<mat-toolbar class="topbar">
+  <!-- --------------------------------------------------------------- -->
+  <!-- Desktop Menu -->
+  @if(showToggle) {
+  <button mat-icon-button (click)="toggleCollapsed.emit()" class="d-flex justify-content-center">
+    <i-tabler name="menu-2" class="icon-20 d-flex"></i-tabler>
+  </button>
+  }
+
+  <!-- Mobile Menu -->
+  @if(!showToggle) {
+  <button mat-icon-button (click)="toggleMobileNav.emit()" class="d-flex justify-content-center">
+    <i-tabler name="menu-2" class="icon-20 d-flex"></i-tabler>
+  </button>
+  }
+  
+  <!-- --------------------------------------------------------------- -->
+  <!--  Search -->
+  <!-- --------------------------------------------------------------- -->
+  <button mat-icon-button (click)="openDialog()" class="d-flex justify-content-center">
+    <i-tabler name="search" class="icon-20 d-flex"></i-tabler>
+  </button>
+
+  <div class="d-none d-lg-flex">
+    <a mat-button [routerLink]="['/answer-key']">Answer Key</a>
+    @if(isAdmin) {
+    <a mat-button [routerLink]="['/users']">Users</a>
+    }
+  </div>
+
+  <span class="flex-1-auto"></span>
+
+  <!-- Mobile Menu -->
+  <button mat-icon-button (click)="toggleMobileFilterNav.emit()" class="d-flex d-lg-none justify-content-center">
+    <i-tabler name="grid-dots" class="icon-20 d-flex"></i-tabler>
+  </button>
+
+  <!-- --------------------------------------------------------------- -->
+  <!-- langugage Dropdown -->
+  <!-- --------------------------------------------------------------- -->
+  <button [matMenuTriggerFor]="flags" mat-icon-button class="m-r-5">
+    <img [src]="selectedLanguage.icon" class="rounded-circle object-cover icon-20" />
+  </button>
+  <mat-menu #flags="matMenu" class="cardWithShadow">
+    @for(lang of languages; track lang.icon) {
+    <button mat-menu-item (click)="changeLanguage(lang)">
+      <div class="d-flex align-items-center">
+        <img [src]="lang.icon" class="rounded-circle object-cover m-r-8 icon-20" />
+        <span class=" f-s-14">{{ lang.language }}</span>
+      </div>
+    </button>
+    }
+  </mat-menu>
+
+  @if(options.theme=='light'){
+  <button mat-icon-button aria-label="lightdark" class="d-flex justify-content-center" (click)="setlightDark('dark')">
+    <i-tabler class="d-flex icon-22" [name]="'moon'"></i-tabler>
+  </button>
+  }@else{
+  <button mat-icon-button aria-label="lightdark" class="d-flex justify-content-center" (click)="setlightDark('light')">
+    <i-tabler class="d-flex icon-22" [name]="'sun'"></i-tabler>
+  </button>
+  }
+
+
+  <!-- --------------------------------------------------------------- -->
+  <!-- profile Dropdown -->
+  <!-- --------------------------------------------------------------- -->
+  <button mat-icon-button [matMenuTriggerFor]="profilemenu" aria-label="Notifications" class="m-l-8">
+    <img src="/assets/images/profile/user-1.jpg" class="rounded-circle object-cover icon-35 profile-dd" width="35" />
+  </button>
+  <mat-menu #profilemenu="matMenu" class="topbar-dd cardWithShadow">
+    <ng-scrollbar class="position-relative" style="max-height: 647px">
+      <div class="p-x-32 p-y-16">
+        <h6 class="f-s-16 f-w-600 m-0 ">User Profile</h6>
+
+        <div class="d-flex align-items-center p-b-24 b-b-1 m-t-16">
+          <img src="/assets/images/profile/user-1.jpg" class="rounded-circle" width="95" />
+          <div class="m-l-16">
+            <h6 class="f-s-14 f-w-600 m-0">{{ authService.currentUser?.username || 'User' }}</h6>
+            <span class="f-s-14 d-block m-b-4">{{ (authService.currentUser?.role | lowercase) | titlecase }}</span>
+            <span class="d-flex align-items-center">
+              <i-tabler name="mail" class="icon-15 m-r-4"></i-tabler>
+              {{ authService.currentUser?.email || '' }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="p-x-32">
+        @for(profile of profiledd; track profile.title) {
+        <a class="p-y-16 text-decoration-none d-block text-hover-primary" [routerLink]="">
+          <div class="d-flex align-items-center">
+            <button mat-mini-fab class="text-primary bg-light shadow-none rounded">
+              <img [src]="profile.img" width="20" />
+            </button>
+
+            <div class="m-l-16">
+              <h5 class="f-s-14 f-w-600 m-0 textprimary  hover-text">
+                {{ profile.title }}
+              </h5>
+              <span class="f-s-14 text-body">{{ profile.subtitle }}</span>
+            </div>
+          </div>
+        </a>
+        }
+      </div>
+
+      <div class="p-y-12 p-x-32">
+        <a [routerLink]="['/authentication/login']" mat-stroked-button color="primary" class="w-100" (click)="logout()">Logout</a>
+      </div>
+    </ng-scrollbar>
+  </mat-menu>
+</mat-toolbar>

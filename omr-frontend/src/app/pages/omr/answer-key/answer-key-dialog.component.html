@@ -1,0 +1,18 @@
+<div class="d-flex align-items-center justify-content-between m-b-16 p-x-20 p-t-16">
+    <h3>{{ data.title }}</h3>
+    <button mat-icon-button (click)="closeDialog()" class="d-flex justify-content-center">
+        <i-tabler name="x" class="icon-20 d-flex">
+        </i-tabler>
+    </button>
+</div>
+
+<div class="p-x-24 m-y-8">
+    <p class="f-s-14" style="white-space: pre-line;">
+        {{ data.message }}
+    </p>
+</div>
+
+<div mat-dialog-actions class="p-x-24 p-b-24">
+    <button mat-flat-button color="warn" (click)="confirm()">Confirm</button>
+    <button mat-flat-button (click)="closeDialog()" class="m-l-8 bg-error text-white">Cancel</button>
+</div>

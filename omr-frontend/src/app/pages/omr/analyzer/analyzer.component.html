@@ -1,0 +1,354 @@
+<!-- ═══════════════════════════════════════════════════════════
+     ANALYZER PAGE WRAPPER
+     ═══════════════════════════════════════════════════════════ -->
+<div class="analyzer-page">
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SECTION 1 — UPLOAD SHEET AREA
+         ═══════════════════════════════════════════════════════════ -->
+    <mat-card class="section-card upload-section">
+
+        <div class="section-header">
+            <mat-icon class="section-icon">upload_file</mat-icon>
+            <div>
+                <h2 class="section-title">Upload OMR Sheets</h2>
+                <!-- <p class="section-subtitle">Drag & drop or browse to upload JPG, PNG, or ZIP files</p> -->
+            </div>
+        </div>
+
+        <!-- ERROR / SUCCESS inside upload card -->
+        <!-- <div class="alert alert-danger m-b-16" *ngIf="errorMessage">{{ errorMessage }}</div>
+        <div class="alert alert-success m-b-16" *ngIf="successMessage">{{ successMessage }}</div> -->
+
+        <!-- UPLOAD DROPZONE -->
+        <mat-card class="upload-card" [class.drag-over]="isDragging" [class.disabled]="isProcessing"
+            (click)="!isProcessing && fileInput.click()" (dragover)="!isProcessing && onDragOver($event)"
+            (dragleave)="onDragLeave($event)" (drop)="!isProcessing && onDrop($event)">
+
+            <input type="file" accept=".jpg,.png,.zip" #fileInput hidden multiple [disabled]="isProcessing"
+                (change)="onFileSelected($event); fileInput.value = ''">
+
+            <div class="upload-content">
+
+                <mat-icon class="upload-icon">cloud_upload</mat-icon>
+
+                <h3 class="m-t-10 upload-title">Drag & Drop OMR sheets here or,
+                    <span class="browse-link">browse files</span>
+                </h3>
+
+                <span class="file-types">
+                    JPG · PNG · ZIP
+                </span>
+
+            </div>
+
+            <!-- FILE LIST -->
+            <div class="m-t-24" *ngIf="selectedFiles.length" (click)="$event.stopPropagation()">
+
+                <mat-card class="selected-files-card">
+
+                    <div class="file-chip-wrap">
+
+                        <mat-chip-set>
+
+                            <mat-chip *ngFor="let file of selectedFiles; let i = index" removable="true"
+                                (removed)="removeFile(i)">
+
+                                {{ file.name }}
+
+                                <mat-icon matChipRemove>cancel</mat-icon>
+
+                            </mat-chip>
+
+                        </mat-chip-set>
+
+                    </div>
+
+                    <div class="d-flex gap-16 justify-content-end m-t-20">
+
+                        <button mat-stroked-button color="warn" (click)="selectedFiles = []" [disabled]="isProcessing">
+                            Clear
+                        </button>
+
+                        <button mat-flat-button color="primary" (click)="processFiles()" [disabled]="isProcessing">
+                            <span *ngIf="!isProcessing">Process</span>
+                            <span *ngIf="isProcessing">Processing...</span>
+                        </button>
+
+                    </div>
+
+                </mat-card>
+
+            </div>
+
+        </mat-card>
+
+        <!-- PROGRESS -->
+        <div class="m-t-20" *ngIf="isProcessing">
+
+            <mat-card class="progress-card">
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>{{ progressText }}</span>
+                    <span>{{ progressPct }}%</span>
+                </div>
+
+                <mat-progress-bar mode="determinate" [value]="progressPct" class="m-t-16">
+                </mat-progress-bar>
+
+                <div class="m-t-12 text-muted">
+                    {{ liveCount }} result(s) so far
+                </div>
+
+            </mat-card>
+
+        </div>
+
+    </mat-card>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SECTION 2 — RESULTS AREA
+         ═══════════════════════════════════════════════════════════ -->
+    <mat-card class="section-card results-section" *ngIf="statTotal > 0 || resultRows.length > 0">
+
+        <div class="section-header">
+            <mat-icon class="section-icon">assessment</mat-icon>
+            <div>
+                <h2 class="section-title">Analysis Results</h2>
+                <p class="section-subtitle">Processed results and performance overview</p>
+            </div>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-grid" *ngIf="statTotal > 0">
+
+            <mat-card class="stat-card">
+                <div class="stat-content">
+                    <mat-icon color="primary">fact_check</mat-icon>
+                    <div>
+                        <div class="stat-label">Total Processed</div>
+                        <div class="stat-value">{{ statTotal }}</div>
+                    </div>
+                </div>
+            </mat-card>
+
+            <mat-card class="stat-card">
+                <div class="stat-content">
+                    <mat-icon color="accent">analytics</mat-icon>
+                    <div>
+                        <div class="stat-label">Average Score</div>
+                        <div class="stat-value">{{ statAvg }}</div>
+                    </div>
+                </div>
+            </mat-card>
+
+            <mat-card class="stat-card">
+                <div class="stat-content">
+                    <mat-icon color="warn">emoji_events</mat-icon>
+                    <div>
+                        <div class="stat-label">Highest Score</div>
+                        <div class="stat-value">{{ statHigh }}</div>
+                    </div>
+                </div>
+            </mat-card>
+
+        </div>
+
+        <!-- RESULTS TABLE -->
+        <div class="results-table-wrap" *ngIf="resultRows.length > 0">
+
+            <!-- RESULT HEADER -->
+            <div class="results-header">
+
+                <div>
+                    <h3 class="results-title">Results Records</h3>
+                </div>
+
+                <div class="search-box">
+
+                    <mat-form-field appearance="outline" class="search-field">
+                        <mat-label>Search</mat-label>
+                        <input matInput placeholder="Search student..." [value]="searchQuery"
+                            (input)="onSearch($any($event.target).value)">
+                        <mat-icon matSuffix>search</mat-icon>
+                    </mat-form-field>
+
+                    <button mat-flat-button color="primary" class="export-btn" type="button"
+                        (click)="onExport(); $event.stopPropagation()">
+                        <mat-icon>download</mat-icon>
+                        Export Results
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- TABLE -->
+            <div class="table-responsive">
+
+                <table mat-table [dataSource]="dataSource" class="w-100">
+
+                    <!-- INDEX -->
+                    <ng-container matColumnDef="index">
+                        <th mat-header-cell *matHeaderCellDef>#</th>
+                        <td mat-cell *matCellDef="let r">{{ rowIndex(r) }}</td>
+                    </ng-container>
+
+                    <!-- NAME -->
+                    <ng-container matColumnDef="name">
+                        <th mat-header-cell *matHeaderCellDef>Student Name</th>
+                        <td mat-cell *matCellDef="let r">{{ r.name || '—' }}</td>
+                    </ng-container>
+
+                    <!-- CENTRE -->
+                    <ng-container matColumnDef="centre">
+                        <th mat-header-cell *matHeaderCellDef>Centre Number</th>
+                        <td mat-cell *matCellDef="let r">{{ r.centre_number || '—' }}</td>
+                    </ng-container>
+
+                    <!-- LEVEL -->
+                    <ng-container matColumnDef="level">
+                        <th mat-header-cell *matHeaderCellDef>Level</th>
+                        <td mat-cell *matCellDef="let r">
+                            <span [class]="levelClass(normalizedLevel(r))">
+                                {{ levelLabel(normalizedLevel(r)) }}
+                            </span>
+                        </td>
+                    </ng-container>
+
+                    <!-- DOB -->
+                    <ng-container matColumnDef="dob">
+                        <th mat-header-cell *matHeaderCellDef>DOB</th>
+                        <td mat-cell *matCellDef="let r">{{ r.dob || '—' }}</td>
+                    </ng-container>
+
+                    <!-- SCORE -->
+                    <ng-container matColumnDef="score">
+                        <th mat-header-cell *matHeaderCellDef>Score %</th>
+                        <td mat-cell *matCellDef="let r">
+                            <span [class]="scoreClass(r.percentage)">{{ r.percentage }}%</span>
+                        </td>
+                    </ng-container>
+
+                    <!-- ACTION -->
+                    <ng-container matColumnDef="action">
+                        <th mat-header-cell *matHeaderCellDef>Action</th>
+                        <td mat-cell *matCellDef="let r">
+                            <button mat-stroked-button color="primary" class="view-btn" type="button"
+                                (click)="viewResult(r.key); $event.stopPropagation()">
+                                <mat-icon>visibility</mat-icon>
+                                View
+                            </button>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+                </table>
+
+            </div>
+
+            <!-- PAGINATOR -->
+            <mat-paginator [pageSize]="5" [pageSizeOptions]="[5,10,20]" showFirstLastButtons>
+            </mat-paginator>
+
+        </div>
+
+    </mat-card>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     STUDENT DETAIL MODAL
+     ═══════════════════════════════════════════════════════════ -->
+<div class="modal-backdrop" [class.open]="modalOpen" (click)="closeModal()">
+    <div class="student-modal" (click)="$event.stopPropagation()" *ngIf="modalStudent">
+
+        <!-- MODAL HEADER -->
+        <div class="sm-header">
+            <div class="sm-header-left">
+                <div class="sm-avatar">{{ nameInitial(modalStudent.name) }}</div>
+                <div>
+                    <div class="sm-name">{{ modalStudent.name || '—' }}</div>
+                    <div class="sm-meta">{{ modalMetaLine() }}</div>
+                </div>
+            </div>
+            <div class="sm-score-badge">
+                <div class="sm-pct" [style.color]="modalPctColor()">{{ modalStudent.percentage }}%</div>
+                <div class="sm-pct-label">Score</div>
+            </div>
+            <button mat-icon-button class="sm-close" (click)="closeModal()">
+                <mat-icon>close</mat-icon>
+            </button>
+        </div>
+
+        <!-- MODAL STATS -->
+        <div class="modal-scroll">
+
+            <!-- MODAL STATS -->
+            <div class="sm-stats">
+
+                <div class="sm-stat">
+                    <div class="sm-stat-num correct-color">{{ modalCorrect() }}</div>
+                    <div class="sm-stat-label">Correct</div>
+                </div>
+
+                <div class="sm-stat">
+                    <div class="sm-stat-num wrong-color">{{ modalWrong() }}</div>
+                    <div class="sm-stat-label">Wrong</div>
+                </div>
+
+                <div class="sm-stat">
+                    <div class="sm-stat-num empty-color">{{ modalEmpty() }}</div>
+                    <div class="sm-stat-label">Empty</div>
+                </div>
+
+            </div>
+
+            <!-- LEGEND -->
+            <div class="sm-legend">
+
+                <div class="sm-legend-item">
+                    <span class="legend-dot correct-bg"></span>
+                    Correct
+                </div>
+
+                <div class="sm-legend-item">
+                    <span class="legend-dot wrong-bg"></span>
+                    Wrong
+                </div>
+
+                <div class="sm-legend-item">
+                    <span class="legend-dot multi-bg"></span>
+                    Multiple marks
+                </div>
+
+                <div class="sm-legend-item">
+                    <span class="legend-dot empty-bg"></span>
+                    Unanswered
+                </div>
+
+            </div>
+
+            <!-- ANSWER GRID -->
+            <div class="sm-pill-grid">
+
+                <div *ngFor="let a of modalAnswers(); let i = index" [class]="pillClass(a)">
+
+                    <span class="pill-q">
+                        Q{{ (i + 1).toString().padStart(2, '0') }}
+                    </span>
+
+                    <span class="pill-v">
+                        {{ pillDisplay(a) }}
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>

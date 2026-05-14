@@ -1,0 +1,375 @@
+<!-- ── LEVEL SELECTOR ──────────────────────────────────────────────────── -->
+
+<mat-card class="cardWithShadow">
+
+  <mat-card-content>
+
+    <div class="row justify-content-between align-items-center gap-16">
+
+      <div class="col-lg-8">
+
+        <p class="ak-section-label">
+          Select Level
+        </p>
+
+        <div class="ak-levels-wrapper">
+
+          <button *ngFor="let level of levels" class="ak-level-chip" [class.active]="selectedLevel === level"
+            [disabled]="loading" (click)="selectLevel(level)">
+
+            {{ levelLabel(level) }}
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </mat-card-content>
+
+</mat-card>
+
+<!-- ── SCORING RULES ──────────────────────────────────────────────────── -->
+
+<mat-card class="cardWithShadow m-t-16">
+
+  <mat-card-content>
+
+    <div class="row justify-content-between align-items-center m-b-16">
+
+      <div class="col">
+
+        <h5 class="f-s-16 f-w-600 m-0">
+          Scoring Rules
+        </h5>
+
+      </div>
+
+      <div class="col-auto d-flex align-items-center gap-8">
+
+        <button mat-stroked-button color="warn" (click)="deleteAllRules()" [disabled]="loading || savingRules">
+
+          Delete All
+
+        </button>
+
+        <button mat-flat-button color="primary" (click)="addRange()" [disabled]="loading || savingRules">
+
+          Add Range
+
+        </button>
+
+        <button mat-flat-button color="accent" (click)="saveScoringRules()" [disabled]="
+            savingRules ||
+            loading ||
+            !rulesDirty ||
+            rangeErrors.length > 0 ||
+            invalidRanges.length > 0
+          ">
+
+          <mat-spinner *ngIf="savingRules" diameter="18" class="btn-spinner">
+
+          </mat-spinner>
+
+          {{ savingRules ? 'Saving…' : 'Save Rules' }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- VALIDATION SUMMARY -->
+
+    <div class="ak-validation-wrap" *ngIf="!loading">
+
+      <div class="ak-validation danger" *ngIf="rangeErrors.length">
+
+        Overlapping question ranges detected
+
+      </div>
+
+      <div class="ak-validation danger" *ngIf="invalidRanges.length">
+
+        Invalid ranges found
+
+      </div>
+
+      <div class="ak-validation warning" *ngIf="missingRanges.length">
+
+        Missing coverage:
+
+        <span *ngFor="let gap of missingRanges; let last = last">
+
+          {{ gap.start }}-{{ gap.end }}
+
+          <span *ngIf="!last">, </span>
+
+        </span>
+
+      </div>
+
+      <div class="ak-validation success">
+
+        Coverage: {{ coverageCount }} / 40
+
+      </div>
+
+    </div>
+
+    <!-- SKELETON -->
+
+    <ng-container *ngIf="loading">
+
+      <div class="ak-range-hdr">
+
+        <span>From</span>
+        <span>To</span>
+        <span>Correct</span>
+        <span>Wrong</span>
+        <span>Empty</span>
+        <span></span>
+
+      </div>
+
+      <div class="ak-range-row ak-skel-row" *ngFor="let s of [1,2]">
+
+        <div class="ak-skel ak-skel-field" *ngFor="let f of [1,2,3,4,5]">
+
+        </div>
+
+        <div class="ak-skel ak-skel-icon"></div>
+
+      </div>
+
+    </ng-container>
+
+    <!-- EMPTY HINT -->
+
+    <div *ngIf="!loading && ranges.length === 0" class="ak-empty-hint">
+
+      No rules defined — default scoring
+      (correct: 1, wrong: 0, empty: 0)
+      will apply.
+
+    </div>
+
+    <!-- RANGE ROWS -->
+
+    <ng-container *ngIf="!loading && ranges.length > 0">
+
+      <div class="ak-range-hdr">
+
+        <span>From</span>
+        <span>To</span>
+        <span>Correct</span>
+        <span>Wrong</span>
+        <span>Empty</span>
+        <span></span>
+
+      </div>
+
+      <div class="ak-range-row" *ngFor="let range of ranges; let i = index"
+        [class.ak-range-error]="rangeErrors.includes(i)" [class.ak-range-invalid]="invalidRanges.includes(i)">
+
+        <div class="ak-range-field">
+
+          <input type="number" min="1" max="40" [(ngModel)]="range.from" (ngModelChange)="validateRanges()"
+            placeholder="1" />
+
+        </div>
+
+        <div class="ak-range-field">
+
+          <input type="number" min="1" max="40" [(ngModel)]="range.to" (ngModelChange)="validateRanges()"
+            placeholder="40" />
+
+        </div>
+
+        <div class="ak-range-field">
+
+          <input type="number" step="0.5" [(ngModel)]="range.correct" (ngModelChange)="validateRanges()" />
+
+        </div>
+
+        <div class="ak-range-field">
+
+          <input type="number" step="0.5" [(ngModel)]="range.wrong" (ngModelChange)="validateRanges()" />
+
+        </div>
+
+        <div class="ak-range-field">
+
+          <input type="number" step="0.5" [(ngModel)]="range.empty" (ngModelChange)="validateRanges()" />
+
+        </div>
+
+        <a class="ak-del-link cursor-pointer" (click)="removeRange(i)" [class.disabled]="loading || savingRules">
+
+          <i-tabler name="trash" class="icon-18">
+
+          </i-tabler>
+
+        </a>
+
+      </div>
+
+    </ng-container>
+
+  </mat-card-content>
+
+</mat-card>
+
+<!-- ── ANSWER KEY GRID ─────────────────────────────────────────────────── -->
+
+<mat-card class="cardWithShadow m-t-16">
+
+  <mat-card-content>
+
+    <div class="row justify-content-between align-items-center m-b-16">
+
+      <div class="col">
+
+        <h5 class="f-s-16 f-w-600 m-0">
+
+          Answer Keys
+
+          <span class="ak-level-tag">
+
+            {{ levelLabel(selectedLevel) }}
+
+          </span>
+
+        </h5>
+
+        <span class="f-s-14 text-muted" *ngIf="!loading">
+
+          {{ setCount }} / 40 answered
+
+          <span class="ak-dirty-badge" *ngIf="isDirty">
+
+            · unsaved changes
+
+          </span>
+
+        </span>
+
+        <span class="f-s-14 text-muted" *ngIf="loading">
+
+          Loading…
+
+        </span>
+
+      </div>
+
+      <div class="col-auto d-flex align-items-center gap-16">
+
+        <button mat-stroked-button color="warn" (click)="clearAllAnswers()" [disabled]="loading || savingAnswers">
+
+          Clear All
+
+        </button>
+
+        <button mat-stroked-button (click)="cancelEdit()" [disabled]="!isDirty || loading || savingAnswers">
+
+          Cancel
+
+        </button>
+
+        <button mat-flat-button color="primary" (click)="saveAnswerKey()" [disabled]="
+            savingAnswers ||
+            !isDirty ||
+            loading
+          ">
+
+          <mat-spinner *ngIf="savingAnswers" diameter="18" class="btn-spinner">
+
+          </mat-spinner>
+
+          {{ savingAnswers ? 'Saving…' : 'Save Key' }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- LEGEND -->
+
+    <div class="ak-opt-legend" *ngIf="!loading">
+
+      <div class="ak-legend-item" *ngFor="let opt of options">
+
+        <span class="ak-legend-dot" [ngClass]="'dot-' + opt.toLowerCase()">
+
+        </span>
+
+        {{ opt }}
+
+      </div>
+
+      <div class="ak-legend-item">
+
+        <span class="ak-legend-dot dot-unset"></span>
+
+        Unset
+
+      </div>
+
+    </div>
+
+    <!-- SKELETON GRID -->
+
+    <div class="ak-answers-grid" *ngIf="loading">
+
+      <div class="ak-answer-cell ak-skel-cell" *ngFor="let q of questions">
+
+        <div class="ak-skel ak-skel-qlabel"></div>
+
+        <div class="ak-skel-opt-row">
+
+          <div class="ak-skel ak-skel-opt" *ngFor="let o of options">
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ANSWER GRID -->
+
+    <div class="ak-answers-grid" *ngIf="!loading">
+
+      <div class="ak-answer-cell" *ngFor="let q of questions" [class.is-set]="editData[q.key]">
+
+        <span class="ak-q-label">
+
+          {{ q.label }}
+
+        </span>
+
+        <div class="ak-opt-row">
+
+          <button *ngFor="let opt of options" class="ak-opt-btn" [ngClass]="
+              editData[q.key] === opt
+                ? 'sel-' + opt.toLowerCase()
+                : ''
+            " (click)="selectOption(q.key, opt)">
+
+            {{ opt }}
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </mat-card-content>
+
+</mat-card>
