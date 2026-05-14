@@ -4,6 +4,10 @@ An automated **Optical Mark Recognition (OMR)** system that scans and evaluates 
 
 ---
 
+## Output Video (Screen Recording)
+
+[Watch] https://drive.google.com/file/d/1ndV8RtW0VKe0rEy36soJnlGWDVMWnPlh/view?usp=sharing
+
 ## Project Structure
 
 | Folder | Description |

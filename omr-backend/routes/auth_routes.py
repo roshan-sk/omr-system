@@ -26,7 +26,7 @@ def login():
         return jsonify({"msg": "Invalid password"}), 401
 
     if not user.is_active:
-        return jsonify({"msg": "Your account is disabled. Please contact the admin."}), 403
+        return jsonify({"msg": "Access denied: your account has been disabled. Please reach out to your admin."}), 403
 
     access_token = create_access_token(
         identity=str(user.id),
