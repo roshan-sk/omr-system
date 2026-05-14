@@ -60,9 +60,6 @@ def _parse_rule_int(rule, key):
         return None
 
 
-# =========================================================
-# SAVE ANSWER KEY + SCORING RULES
-# =========================================================
 
 @answer_key_bp.route("/api/save_answer_key", methods=["POST"])
 @jwt_required()
@@ -96,9 +93,6 @@ def save_answer_key():
 
         parsed_rules = []
 
-        # =====================================================
-        # PARSE RULES
-        # =====================================================
 
         for index, rule in enumerate(scoring_rules):
 
@@ -121,9 +115,6 @@ def save_answer_key():
 
             parsed_rules.append(parsed_rule)
 
-        # =====================================================
-        # VALIDATION
-        # =====================================================
 
         if parsed_rules:
 
@@ -138,9 +129,6 @@ def save_answer_key():
             if validation_errors["missing_ranges"]:
                 return jsonify({"error": "Missing question coverage", "details": validation_errors}), 400
 
-        # =====================================================
-        # SAVE ANSWER KEYS
-        # =====================================================
 
         AnswerKey.query.filter_by(level=level).delete()
 
@@ -176,9 +164,6 @@ def save_answer_key():
                     )
                 )
 
-        # =====================================================
-        # REPLACE SCORING RULES
-        # =====================================================
 
         ScoringRule.query.filter_by(level=level).delete()
 
@@ -206,9 +191,6 @@ def save_answer_key():
         return jsonify({"error": str(e)}), 500
 
 
-# =========================================================
-# GET ANSWER KEY
-# =========================================================
 
 @answer_key_bp.route("/api/get_answer_key/<level>", methods=["GET"])
 @jwt_required()
@@ -235,9 +217,6 @@ def get_answer_key(level):
             .all()
         )
 
-        # =====================================================
-        # RUNTIME FALLBACK ONLY
-        # =====================================================
 
         if rules_db:
 
@@ -260,10 +239,6 @@ def get_answer_key(level):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-# =========================================================
-# DELETE ALL SCORING RULES
-# =========================================================
 
 @answer_key_bp.route("/api/delete_scoring_rules/<level>", methods=["DELETE"])
 @jwt_required()
@@ -297,9 +272,6 @@ def delete_scoring_rules(level):
 
         return jsonify({"error": str(e)}), 500
 
-# =========================================================
-# DELETE ALL ANSWER KEYS
-# =========================================================
 
 @answer_key_bp.route("/api/delete_answer_keys/<level>", methods=["DELETE"])
 @jwt_required()

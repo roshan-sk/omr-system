@@ -32,11 +32,6 @@ def generate_export_excel(batch_id):
         }), 404
 
     try:
-
-        # =====================================================
-        # PRELOAD SCORING RULES
-        # =====================================================
-
         rules_by_level = {}
 
         all_rules = (
@@ -59,10 +54,6 @@ def generate_export_excel(batch_id):
 
             rules_by_level.setdefault(level, []).append(rule)
 
-        # =====================================================
-        # PRECOMPUTE MAX MARKS
-        # =====================================================
-
         max_marks_by_level = {}
 
         for level, rules in rules_by_level.items():
@@ -75,10 +66,6 @@ def generate_export_excel(batch_id):
                     rule.range_to + 1
                 )
             )
-
-        # =====================================================
-        # EXCEL SETUP
-        # =====================================================
 
         wb = Workbook()
 
@@ -145,10 +132,6 @@ def generate_export_excel(batch_id):
             cell.fill = header_fill
 
             cell.font = header_font
-
-        # =====================================================
-        # PROCESS STUDENTS
-        # =====================================================
 
         for idx, s in enumerate(students, start=1):
 
@@ -238,10 +221,6 @@ def generate_export_excel(batch_id):
 
             ws.append(row)
 
-            # =================================================
-            # CELL COLORS
-            # =================================================
-
             for i in range(40):
 
                 col = start_col + i
@@ -270,10 +249,6 @@ def generate_export_excel(batch_id):
                 else:
 
                     cell.fill = red
-
-        # =====================================================
-        # EXPORT FILE
-        # =====================================================
 
         timestamp = datetime.now().strftime(
             "%Y%m%d_%H%M%S"
