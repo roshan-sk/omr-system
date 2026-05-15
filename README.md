@@ -6,9 +6,11 @@ An automated **Optical Mark Recognition (OMR)** system that scans and evaluates 
 
 ## Output Video (Screen Recording)
 
-[Watch] https://drive.google.com/file/d/1ndV8RtW0VKe0rEy36soJnlGWDVMWnPlh/view?usp=sharing
+[Watch](https://drive.google.com/file/d/1ndV8RtW0VKe0rEy36soJnlGWDVMWnPlh/view?usp=sharing)
 
-[PDF Support Output Recoding] https://drive.google.com/file/d/1B1A60PcKLP7RLSbgZMXNQ8zPL_WKMOSZ/view?usp=sharing
+[PDF Support Output Recording](https://drive.google.com/file/d/1B1A60PcKLP7RLSbgZMXNQ8zPL_WKMOSZ/view?usp=sharing)
+
+---
 
 ## Project Structure
 
@@ -25,7 +27,7 @@ An automated **Optical Mark Recognition (OMR)** system that scans and evaluates 
 |---|---|
 | Backend | Python, Flask, OpenCV, NumPy |
 | Frontend | Angular 21, TypeScript, Node.js |
-| Image Processing | OpenCV (`cv2`) |
+| Image Processing | OpenCV (`cv2`), pdf2image + Poppler |
 
 ---
 
@@ -38,6 +40,47 @@ Make sure you have the following installed before proceeding:
 - **Python** 3.9+
 - **Node.js** 18+ and **npm**
 - **Git**
+- **Poppler** — required by `pdf2image` to convert PDF files (see install steps below)
+
+---
+
+### Install Poppler (Required for PDF Support)
+
+`pdf2image` is a wrapper around Poppler's `pdftoppm` utility. You must install Poppler separately on your OS — `pip install pdf2image` alone is not enough.
+
+#### Windows
+
+1. Download the latest Poppler for Windows from [@oschwartz10612's release page](https://github.com/oschwartz10612/poppler-windows/releases/tag/v25.12.0-0)
+2. Extract the zip and note the path to the `bin/` folder (e.g. `C:\poppler\bin`)
+3. Add that `bin/` folder to your system **PATH**:
+   - Search **"Environment Variables"** in the Start menu
+   - Under **System Variables**, find `Path` → Edit → New → paste the path
+   - Click OK and restart your terminal
+4. Verify: open a new terminal and run `pdfinfo -v` — you should see output
+
+#### macOS
+
+```bash
+brew install poppler
+```
+
+#### Linux (Ubuntu / Debian)
+
+```bash
+sudo apt-get install poppler-utils
+```
+
+#### Linux (Fedora / RHEL)
+
+```bash
+sudo dnf install poppler-utils
+```
+
+Verify on any platform:
+
+```bash
+pdftoppm -h
+```
 
 ---
 
@@ -77,8 +120,10 @@ pip install -r requirements.txt
 If `requirements.txt` is not present, install core packages manually:
 
 ```bash
-pip install flask flask-sqlalchemy flask-jwt-extended flask-cors pymysql opencv-python numpy Pillow openpyxl werkzeug python-dotenv
+pip install flask flask-sqlalchemy flask-jwt-extended flask-cors pymysql opencv-python numpy Pillow openpyxl werkzeug python-dotenv pdf2image
 ```
+
+> **Note:** `pdf2image` is listed here because PDF upload support was added. Make sure Poppler is installed on your system first (see above) — otherwise PDF uploads will be silently skipped.
 
 #### Configure environment variables
 
@@ -175,12 +220,23 @@ The frontend will be available at `http://localhost:4200`
 ---
 
 ## Usage
-1. Open http://localhost:4200 in your browser.
-2. Log in using your credentials to continue.
-3. Upload a scanned OMR answer sheet image.
-4. Define or select an answer key.
-5. Submit to view automated evaluation results.
+
+1. Open `http://localhost:4200` in your browser
+2. Log in using your credentials to continue
+3. Upload a scanned OMR answer sheet — supported formats: **JPG, PNG, PDF, ZIP**
+4. Define or select an answer key
+5. Submit to view automated evaluation results
 
 ---
 
-> **Note:** Although the OMR sheet includes **level bubble** (e.g. Junior, Intermediate, Senior), the system currently evaluates all sheets using the **Intermediate (default)** answer key only. Level-specific evaluation will be supported in a future update.
+## Supported Upload Formats
+
+| Format | Notes |
+|---|---|
+| `.jpg` / `.png` | Single scanned sheet |
+| `.pdf` | Multi-page supported; each page treated as one sheet. Requires Poppler installed. |
+| `.zip` | Archive of JPG/PNG/PDF files; all sheets processed in one batch |
+
+---
+
+> **Note:** Although the OMR sheet includes a **level bubble** (e.g. Junior, Intermediate, Senior), the system currently evaluates all sheets using the **Intermediate (default)** answer key only. Level-specific evaluation will be supported in a future update.
