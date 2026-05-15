@@ -8,6 +8,8 @@ An automated **Optical Mark Recognition (OMR)** system that scans and evaluates 
 
 [Watch] https://drive.google.com/file/d/1ndV8RtW0VKe0rEy36soJnlGWDVMWnPlh/view?usp=sharing
 
+[PDF Support Output Recoding] https://drive.google.com/file/d/1B1A60PcKLP7RLSbgZMXNQ8zPL_WKMOSZ/view?usp=sharing
+
 ## Project Structure
 
 | Folder | Description |

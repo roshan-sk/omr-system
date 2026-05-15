@@ -25,7 +25,7 @@
             (click)="!isProcessing && fileInput.click()" (dragover)="!isProcessing && onDragOver($event)"
             (dragleave)="onDragLeave($event)" (drop)="!isProcessing && onDrop($event)">
 
-            <input type="file" accept=".jpg,.png,.zip" #fileInput hidden multiple [disabled]="isProcessing"
+            <input type="file" accept=".jpg,.png,.zip,.pdf" #fileInput hidden multiple [disabled]="isProcessing"
                 (change)="onFileSelected($event); fileInput.value = ''">
 
             <div class="upload-content">
@@ -37,7 +37,7 @@
                 </h3>
 
                 <span class="file-types">
-                    JPG · PNG · ZIP
+                    JPG · PNG · PDF · ZIP
                 </span>
 
             </div>

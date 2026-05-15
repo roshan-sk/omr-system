@@ -68,8 +68,6 @@ export class AnalyzerComponent implements AfterViewInit, OnDestroy {
   selectedFiles: File[] = [];
   isDragging = false;
   isProcessing = false;
-  // successMessage = '';
-  // errorMessage = '';
   progressPct = 0;
   progressText = '';
   liveCount = 0;
@@ -88,7 +86,7 @@ export class AnalyzerComponent implements AfterViewInit, OnDestroy {
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
-    private snackBar: MatSnackBar, // ADDED: this is for message
+    private snackBar: MatSnackBar,
   ) {}
 
   openSnackBar(message: string, action: string = 'Close') {
@@ -112,8 +110,6 @@ export class AnalyzerComponent implements AfterViewInit, OnDestroy {
     this.stopPolling();
   }
 
-  // ── File select ────────────────────────────────────────────────────────────
-
   onFileSelected(event: any) {
     const files: FileList = event.target.files;
     if (!files) return;
@@ -126,8 +122,6 @@ export class AnalyzerComponent implements AfterViewInit, OnDestroy {
   removeFile(index: number) {
     this.selectedFiles.splice(index, 1);
   }
-
-  // ── Drag & drop ────────────────────────────────────────────────────────────
 
   onDragOver(event: DragEvent) {
     event.preventDefault();
@@ -149,8 +143,6 @@ export class AnalyzerComponent implements AfterViewInit, OnDestroy {
         this.selectedFiles.push(file);
     });
   }
-
-  // ── Process ────────────────────────────────────────────────────────────────
 
   processFiles() {
     if (!this.selectedFiles.length || this.isProcessing) return;
@@ -187,8 +179,6 @@ export class AnalyzerComponent implements AfterViewInit, OnDestroy {
 
   resetUI() {
     this.isProcessing = true;
-    // this.successMessage = '';
-    // this.errorMessage = '';
     this.progressPct = 0;
     this.progressText = 'Starting...';
     this.liveCount = 0;
@@ -228,7 +218,13 @@ export class AnalyzerComponent implements AfterViewInit, OnDestroy {
             this.isProcessing = false;
             this.progressPct = 100;
             this.progressText = 'Completed';
-            this.openSnackBar(`Done — ${this.liveCount} sheet(s) processed`);
+            const note = (data.completion_note || '').trim();
+            this.openSnackBar(
+              note
+                ? `Done — ${this.liveCount} sheet(s) processed. Issues: ${note}`
+                : `Done — ${this.liveCount} sheet(s) processed`,
+              note ? 'Dismiss' : 'Close',
+            );
             this.selectedFiles = [];
             this.cdr.detectChanges();
           }
@@ -264,11 +260,8 @@ export class AnalyzerComponent implements AfterViewInit, OnDestroy {
     });
 
     this.dataSource.data = [...this.resultRows];
-    // ← No paginator assignment here
     this.cdr.detectChanges();
   }
-
-  // ── Search ─────────────────────────────────────────────────────────────────
 
   onSearch(query: string) {
     this.searchQuery = query;
@@ -276,7 +269,6 @@ export class AnalyzerComponent implements AfterViewInit, OnDestroy {
     if (this.dataSource.paginator) this.dataSource.paginator.firstPage();
   }
 
-  // ── Stats ──────────────────────────────────────────────────────────────────
 
   get statTotal(): number {
     return this.resultRows.length;
@@ -300,7 +292,6 @@ export class AnalyzerComponent implements AfterViewInit, OnDestroy {
     );
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
 
   levelLabel(lv: string): string {
     return LEVEL_LABELS[lv] || lv || '—';
@@ -330,7 +321,6 @@ export class AnalyzerComponent implements AfterViewInit, OnDestroy {
     ).length;
   }
 
-  // ── Modal ──────────────────────────────────────────────────────────────────
 
   viewResult(key: string) {
     const row = this.allResults[key];
